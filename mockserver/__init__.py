@@ -35,6 +35,14 @@ class MockServerClient(object):
             }))
             assert result.status_code == 202, result.content.decode('UTF-8').replace('\n', '\r\n')
 
+    def retrieve(self, request=None):
+        request_json = None
+        if request:
+            request_json = json.dumps(request)
+        result = self._call("retrieve", request_json)
+        assert result.status_code == 200, result.content.decode('UTF-8').replace('\n', '\r\n')
+        return result.json()
+
 
 def request(method=None, path=None, querystring=None, body=None, headers=None, cookies=None):
     return _non_null_options_to_dict(
