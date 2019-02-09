@@ -69,7 +69,11 @@ def response(code=None, body=None, headers=None, cookies=None, delay=None):
 
 
 def times(count):
-    return _Timing(count)
+    return _Timing(count=count)
+
+
+def timesrange(atleast=None, atmost=None):
+    return _Timing(atleast=atleast, atmost=atmost)
 
 
 def form(form):
@@ -102,17 +106,28 @@ class _Option:
 
 
 class _Timing:
-    def __init__(self, count=None):
+    def __init__(self, count=None, atleast=None, atmost=None):
         self.count = count
+        self.atleast = atleast
+        self.atmost = atmost
+        if count is not None:
+            self.atmost = count
+            self.atleast = count
+        self.remaining_times = self.count or self.atmost
 
     def for_expectation(self):
-        if self.count:
-            return {"remainingTimes": self.count, "unlimited": False}
+        if self.remaining_times is not None:
+            return {"remainingTimes": self.remaining_times, "unlimited": False}
         else:
             return {"unlimited": True}
 
     def for_verification(self):
-        return {"exact": True, "count": self.count}
+        verifiers = {}
+        if self.atleast is not None:
+            verifiers['atLeast'] = self.atleast
+        if self.atmost is not None:
+            verifiers['atMost'] = self.atmost
+        return verifiers
 
 
 class _Time:
